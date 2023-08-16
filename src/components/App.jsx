@@ -1,109 +1,62 @@
 import React, { Component } from 'react';
-
+import { ContactForm } from './ContactForm/ContactForm';
+import { ContactList } from './ContactList/ContactList';
+import { Filter } from './Filter/Filter';
 import { nanoid } from 'nanoid';
+// eslint-disable-next-line no-unused-vars
+import css from './App.module.css';
 
-
-
-class PhonebookForm extends Component {
-  state = {
-    name: '',
-    id:'',
-  }
-  handleChange = (e) => {
-    const { name, value, } = e.target;
-
-    this.setState((prevState) => ({
-      ...prevState,
-      [name]: value,
-
-    }))
-  }
-
-  handleSubmit = (e) => {
-    e.preventDefault();
-    this.props.addContact(this.state)
-  }
-  render() {
-    return (
-      <div>
-        <h2>Phonebook</h2>
-        <div>
-          <h3>Name</h3>
-          <form onSubmit={this.handleSubmit}>
-            <input
-              type="text"
-              name="name"
-              pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-              title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
-              value={this.state.name}
-              onChange={this.handleChange}
-              placeholder='Name'
-              required
-            />
-            <button type='submit'>Add contact</button>
-          </form>
-        </div>
-      </div>
-    );
-  }
-}
-
-class ContactsList extends Component {
-
-  render() {
-    return (
-      <div>
-        <ul>
-          {this.props.contacts.map(({ name }) => (
-
-            <li key={nanoid()}>{name}</li>
-
-          ))}
-        </ul>
-      </div>
-
-    );
-  }
-}
-class AddPhoneContact extends Component {
+export class App extends Component {
   state = {
     contacts: [],
-    name: '',
+    filter: '',
+  };
+  findContacts = () => {
+    const { filter, contacts } = this.state;
+    return contacts.filter(contact =>
+      contact.name.toLowerCase().includes(filter.toLowerCase())
+    );
+  };
+  deleteContact = id => {
+    this.setState(prevState => ({
+      contacts: prevState.contacts.filter(contact => contact.id !== id),
+    }));
+  };
+  formSubmit = ({ name, number }) => {
+    const contact = {
+      id: nanoid(),
+      name,
+      number,
+    };
+    this.state.contacts.some(
+      i =>
+        (i.name.toLowerCase() === contact.name.toLowerCase() &&
+          i.number === contact.number) ||
+        i.number === contact.number
+    )
+      ? alert(`${name} is already in contacts`)
+      : this.setState(({ contacts }) => ({
+          contacts: [contact, ...contacts],
+        }));
   };
 
-  addContact = (newContact) => {
-
-    this.setState(prevState => ({
-      contacts: [...prevState.contacts, newContact],
-    }));
+  changeFilterInput = e => {
+    this.setState({ filter: e.target.value });
   };
 
   render() {
-    console.log(this.state.contacts)
+    const { filter } = this.state;
     return (
-      <div>
-        <PhonebookForm addContact={this.addContact} />
-        <ContactsList contacts={this.state.contacts} />
-      </div>
+      <section>
+        <h1>Phonebook</h1>
+        <ContactForm onSubmit={this.formSubmit} />
+        <h2>Contacts</h2>
+        <Filter filter={filter} changeFilterInput={this.changeFilterInput} />
+        <ContactList
+          contacts={this.findContacts()}
+          deleteContact={this.deleteContact}
+        />
+      </section>
     );
   }
 }
-
-export const App = () => {
-  return (
-    <div
-      style={{
-        height: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        fontSize: 40,
-        color: '#010101',
-        flexDirection: 'column',
-      }}
-    >
-
-<AddPhoneContact/>
-    </div>
-  );
-};

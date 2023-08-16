@@ -1,0 +1,9 @@
+section {
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: rgba(62, 60, 150, 0.5);
+}
+
+
